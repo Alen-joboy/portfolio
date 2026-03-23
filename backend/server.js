@@ -76,14 +76,3 @@ setInterval(() => {
   console.log("💓 Server still alive...");
 }, 10000);
 
-pool.query(`
-  CREATE TABLE IF NOT EXISTS messages (
-    id SERIAL PRIMARY KEY,
-    name TEXT,
-    email TEXT,
-    message TEXT
-  );
-`, (err) => {
-  if (err) console.error(err);
-  else console.log("Table created");
-});
