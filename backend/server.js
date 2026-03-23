@@ -6,9 +6,16 @@ require("dotenv").config();
 const app = express();
 
 // ✅ CORS FIX (VERY IMPORTANT)
+const cors = require("cors");
+
 app.use(cors({
-  origin: "*"
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type"]
 }));
+
+// ✅ VERY IMPORTANT (handles preflight)
+app.options("*", cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
