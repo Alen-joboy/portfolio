@@ -5,82 +5,58 @@ require("dotenv").config();
 
 const app = express();
 
-// ✅ CORS (correct & clean)
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type"]
-}));
-
-// ✅ Handle preflight (FIXED)
-app.options("/*", cors());
+// ✅ ONLY THIS CORS (enough)
+app.use(cors());
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ PostgreSQL connection (Render-safe)
+// PostgreSQL connection
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT || 5432,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: { rejectUnauthorized: false },
 });
 
-// Test DB connection
+// Test DB
 pool.query("SELECT NOW()", (err, res) => {
-  if (err) {
-    console.error("❌ PostgreSQL connection error:", err);
-  } else {
-    console.log("✅ PostgreSQL connected at", res.rows[0].now);
-  }
+  if (err) console.error("DB Error:", err);
+  else console.log("DB Connected:", res.rows[0].now);
 });
 
-// Root route
+// Routes
 app.get("/", (req, res) => {
   res.send("Backend running 🚀");
 });
 
-// Contact route
 app.post("/contact", async (req, res) => {
   const { name, email, message } = req.body;
 
-  console.log("📩 Incoming data:", req.body);
+  console.log("Incoming:", req.body);
 
   if (!name || !email) {
-    return res.status(400).send("Name and email are required");
+    return res.status(400).send("Name and email required");
   }
 
   try {
     const result = await pool.query(
-      "INSERT INTO messages(name, email, message) VALUES($1, $2, $3) RETURNING *",
+      "INSERT INTO messages(name, email, message) VALUES($1,$2,$3) RETURNING *",
       [name, email, message]
     );
 
-    console.log("✅ Inserted:", result.rows[0]);
-
-    res.status(201).json({
-      message: "Message saved!",
-      data: result.rows[0],
-    });
-
+    res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error("❌ DB ERROR:", err);
-    res.status(500).send("Database error");
+    console.error(err);
+    res.status(500).send("DB error");
   }
 });
 
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log("Server running on", PORT);
 });
-
-// Keep alive log (optional)
-setInterval(() => {
-  console.log("💓 Server still alive...");
-}, 10000);
