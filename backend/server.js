@@ -38,26 +38,25 @@ app.get("/", (req, res) => {
 
 // Contact route
 app.post("/contact", async (req, res) => {
+  const { name, email, message } = req.body;
+
+  console.log("Incoming data:", req.body);
+
   try {
-    const { name, email, message } = req.body;
-
-    console.log("📩 Incoming data:", name, email, message);
-
-    if (!name || !email) {
-      return res.status(400).send("Name and email are required");
-    }
-
     const result = await pool.query(
       "INSERT INTO messages(name, email, message) VALUES($1, $2, $3) RETURNING *",
       [name, email, message]
     );
 
-    console.log("✅ Data inserted:", result.rows[0]);
+    console.log("Inserted:", result.rows[0]);
 
-    res.status(201).json({
-      message: "Message saved!",
-      data: result.rows[0],
-    });
+    res.status(201).json({ message: "Message saved!", data: result.rows[0] });
+
+  } catch (err) {
+    console.error("DB ERROR:", err);
+    res.status(500).send(err.message);
+  }
+});
 
   } catch (err) {
     console.error("❌ ERROR in /contact:", err);
@@ -75,4 +74,5 @@ app.listen(PORT, () => {
 setInterval(() => {
   console.log("💓 Server still alive...");
 }, 10000);
+
 
