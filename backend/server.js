@@ -5,24 +5,27 @@ require("dotenv").config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// ✅ CORS FIX (VERY IMPORTANT)
+app.use(cors({
+  origin: "https://alen-joboy.github.io"
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// PostgreSQL connection (Render-safe)
+// ✅ PostgreSQL connection (Render-safe)
 const pool = new Pool({
   user: process.env.DB_USER,
-  host: process.env.DB_HOST, // ❌ removed localhost fallback
+  host: process.env.DB_HOST,
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT || 5432,
   ssl: {
-    rejectUnauthorized: false, // ✅ REQUIRED for Render PostgreSQL
+    rejectUnauthorized: false,
   },
 });
 
-// Test DB connection
+// ✅ Test DB connection
 pool.query("SELECT NOW()", (err, res) => {
   if (err) {
     console.error("❌ PostgreSQL connection error:", err);
@@ -31,16 +34,20 @@ pool.query("SELECT NOW()", (err, res) => {
   }
 });
 
-// Root route
+// ✅ Root route
 app.get("/", (req, res) => {
   res.send("Backend running 🚀");
 });
 
-// Contact route
+// ✅ Contact route
 app.post("/contact", async (req, res) => {
   const { name, email, message } = req.body;
 
-  console.log("Incoming data:", req.body);
+  console.log("📩 Incoming data:", req.body);
+
+  if (!name || !email) {
+    return res.status(400).send("Name and email are required");
+  }
 
   try {
     const result = await pool.query(
@@ -48,31 +55,26 @@ app.post("/contact", async (req, res) => {
       [name, email, message]
     );
 
-    console.log("Inserted:", result.rows[0]);
+    console.log("✅ Inserted:", result.rows[0]);
 
-    res.status(201).json({ message: "Message saved!", data: result.rows[0] });
+    res.status(201).json({
+      message: "Message saved!",
+      data: result.rows[0],
+    });
 
   } catch (err) {
-    console.error("DB ERROR:", err);
-    res.status(500).send(err.message);
+    console.error("❌ DB ERROR:", err);
+    res.status(500).send("Database error");
   }
 });
 
-  } catch (err) {
-    console.error("❌ ERROR in /contact:", err);
-    res.status(500).send("Server error");
-  }
-});
-
-// Start server
+// ✅ Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
 
-// Keep alive log (optional)
+// ✅ Keep alive log
 setInterval(() => {
   console.log("💓 Server still alive...");
 }, 10000);
-
-
