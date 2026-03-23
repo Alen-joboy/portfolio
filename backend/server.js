@@ -7,7 +7,7 @@ const app = express();
 
 // ✅ CORS FIX (VERY IMPORTANT)
 app.use(cors({
-  origin: "https://alen-joboy.github.io"
+  origin: "*"
 }));
 
 app.use(express.json());
