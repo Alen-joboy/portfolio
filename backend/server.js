@@ -5,24 +5,22 @@ require("dotenv").config();
 
 const app = express();
 
-// ✅ CORS FIX (VERY IMPORTANT)
-const cors = require("cors");
-
-// ✅ SIMPLE + SAFE
+// ✅ CORS (simple + works everywhere)
 app.use(cors());
 
-// ✅ HANDLE PREFLIGHT MANUALLY
+// ✅ Handle preflight requests (IMPORTANT)
 app.options("*", (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
   res.sendStatus(200);
 });
 
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ PostgreSQL connection (Render-safe)
+// ✅ PostgreSQL connection (Render)
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -34,7 +32,7 @@ const pool = new Pool({
   },
 });
 
-// ✅ Test DB connection
+// Test DB connection
 pool.query("SELECT NOW()", (err, res) => {
   if (err) {
     console.error("❌ PostgreSQL connection error:", err);
@@ -43,12 +41,12 @@ pool.query("SELECT NOW()", (err, res) => {
   }
 });
 
-// ✅ Root route
+// Root route
 app.get("/", (req, res) => {
   res.send("Backend running 🚀");
 });
 
-// ✅ Contact route
+// Contact route
 app.post("/contact", async (req, res) => {
   const { name, email, message } = req.body;
 
@@ -77,13 +75,13 @@ app.post("/contact", async (req, res) => {
   }
 });
 
-// ✅ Start server
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
 
-// ✅ Keep alive log
+// Keep alive log
 setInterval(() => {
   console.log("💓 Server still alive...");
 }, 10000);
