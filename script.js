@@ -1,34 +1,31 @@
 const form = document.getElementById("contactForm");
 
-form.addEventListener("submit", function (event) {
+form.addEventListener("submit", async function (event) {
   event.preventDefault();
 
   const name = document.getElementById("name").value;
   const email = document.getElementById("email").value;
   const message = document.getElementById("message").value;
 
-  const data = { name, email, message };
+  try {
+    const response = await fetch("https://portfolio-backend-ubsz.onrender.com/contact", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ name, email, message })
+    });
 
-  fetch("https://portfolio-backend-ubez.onrender.com/contact", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-  })
-  .then(async function (response) {
     if (!response.ok) {
-      const err = await response.text();
-      throw new Error(err);
+      const text = await response.text();
+      throw new Error(text);
     }
-    return response.json();
-  })
-  .then(function (result) {
-    alert("Message sent successfully");
-    form.reset();
-  })
-  .catch(function (err) {
-    console.error(err);
-    alert("Error occurred");
-  });
+
+    const data = await response.json();
+    alert("Message sent successfully ✅");
+
+  } catch (error) {
+    console.error("ERROR:", error);
+    alert("Error: " + error.message);
+  }
 });
