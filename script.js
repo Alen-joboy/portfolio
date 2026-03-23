@@ -1,18 +1,15 @@
-
 const form = document.getElementById("contactForm");
 
 form.addEventListener("submit", function (event) {
   event.preventDefault();
 
-  // Get values from the form
   const name = document.getElementById("name").value;
   const email = document.getElementById("email").value;
   const message = document.getElementById("message").value;
 
   const data = { name, email, message };
 
-  // Send data to the backend running on port 5000
-  fetch("http://localhost:5000/contact", {
+  fetch("https://portfolio-backend-ubez.onrender.com/contact", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -27,11 +24,11 @@ form.addEventListener("submit", function (event) {
     return response.json();
   })
   .then(function (result) {
-    alert("Message sent succesfully  ");
+    alert("Message sent successfully");
     form.reset();
   })
   .catch(function (err) {
     console.error(err);
-    alert("Error occurred ");
+    alert("Error occurred");
   });
 });
